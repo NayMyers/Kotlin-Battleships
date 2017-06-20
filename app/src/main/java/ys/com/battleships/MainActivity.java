@@ -11,19 +11,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final BattleGridView BGV = ((BattleGridView)findViewById(R.id.grid));
-
-        BGV.setState(0, 0, GridState.MISS);
-        BGV.setState(3, 1, GridState.HIT);
-
-        BGV.setBattleGridViewListener(new BattleGridViewListener() {
-            @Override
-            public void gridClicked(int x, int y) {
-                Log.i("Grid", "Grid pressed at (" + x + ", " + y + ")");
-
-                BGV.setState(x, y, GridState.HIT);
-                BGV.invalidate();
-            }
-        });
+        final FriendlyBattleGridView FBGV = ((FriendlyBattleGridView)findViewById(R.id.grid));
     }
 }

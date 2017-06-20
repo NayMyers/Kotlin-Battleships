@@ -8,9 +8,9 @@ package ys.com.battleships.ships
  */
 class Ship(size: Int, direction: Direction, startX: Int, startY: Int) {
     val size : Int
-    val direction : Direction
-    val startX : Int
-    val startY : Int
+    var direction : Direction
+    var startX : Int
+    var startY : Int
     var damage : Int
 
     init {
@@ -23,14 +23,14 @@ class Ship(size: Int, direction: Direction, startX: Int, startY: Int) {
     }
 
     /**
-     * Called whenever a piece of this ship has been hit
+     * Called whenever a piece of this ship has been hit.
      */
     fun takeHit() {
         damage += 1
     }
 
     /**
-     * Returns whether or not this ship had drowned
+     * Returns whether or not this ship had drowned.
      */
     fun isDrowned() : Boolean {
         return size <= damage

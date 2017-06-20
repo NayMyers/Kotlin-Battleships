@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_UP
 import android.view.View
 
 /**
@@ -149,10 +150,27 @@ open class BattleGridView : View {
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if(listener != null) {
-            listener!!.gridClicked(((event!!.x / width.toFloat()) * (gridSize)).toInt(),
-                                    ((event!!.y / height.toFloat()) * (gridSize)).toInt())
+            listener!!.gridClicked(xToGrid(event!!.x), yToGrid(event!!.y))
         }
 
-        return super.onTouchEvent(event)
+        return event!!.action != ACTION_UP;
+    }
+
+    /**
+     * Returns the x position on the grid given a screen coordinate.
+     *
+     * @param x The x coordinate in pixels on the screen.
+     */
+    open fun xToGrid(x: Float) : Int {
+        return ((x / width.toFloat()) * (gridSize)).toInt()
+    }
+
+    /**
+     * Returns the y position on the grid given a screen coordinate.
+     *
+     * @param y The y coordinate in pixels on the screen.
+     */
+    open fun yToGrid(y: Float) : Int{
+        return ((y / height.toFloat()) * (gridSize)).toInt()
     }
 }
