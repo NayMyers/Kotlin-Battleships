@@ -30,11 +30,12 @@ class FriendlyBattleGridView : BattleGridView {
     var origStartY : Int = 0
     var selectX : Int = 0
     var selectY : Int = 0
+    var hasMoved : Boolean = false
 
     var shipArr : Array<Array<Ship?>>? = null
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        ships = arrayOf(Ship(5, Direction.RIGHT, 0, 0),
+        ships = arrayOf(Ship(5, Direction.DOWN, 6, 0),
                         Ship(4, Direction.RIGHT, 0, 1),
                         Ship(3, Direction.RIGHT, 0, 2),
                         Ship(3, Direction.RIGHT, 0, 3),
@@ -45,7 +46,6 @@ class FriendlyBattleGridView : BattleGridView {
         shipsPaint.strokeWidth = 20F
 
         reloadShipArr()
-        Log.e("Don't", "Don't even worry 'bout it")
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -89,6 +89,7 @@ class FriendlyBattleGridView : BattleGridView {
      * Locks up the grid such that no ships can be moved.
      * Sets up the ship reference grid for future use.
      */
+    //TODO
     fun lock() {
 
     }
@@ -129,35 +130,104 @@ class FriendlyBattleGridView : BattleGridView {
         }
     }
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        //TODO Light tap rotates
-        //TODO Dragging moves ship
+    /**
+     * Fixes the position of a placed ship such that it doesn't occupy the space of an existing ship
+     * as well as doesn't exit the boundaries of the grid.
+     */
+    fun unclipSelectedShip() {
+        if(selectedShip == null) {
+            return
+        }
 
+        var newStartX = selectedShip!!.startX
+        var newStartY = selectedShip!!.startY
+
+        var offset = 0
+        while(isClipped(selectedShip!!)) {
+            for(y in offset downTo -offset) {
+                for(x in offset downTo -offset) {
+                    selectedShip!!.startX = newStartX + x
+                    selectedShip!!.startY = newStartY + y
+
+                    if(!isClipped(selectedShip!!)) {
+                        return
+                    }
+                }
+            }
+
+            offset += 1
+        }
+    }
+
+    /**
+     * Determines whether a ship occupies the space of another ship
+     * or goes beyond the grid boundaries.
+     */
+    private fun isClipped(ship: Ship) : Boolean {
+        var checkX = ship!!.startX
+        var checkY = ship!!.startY
+
+        var xDir = 0
+        var yDir = 0
+
+        if(ship.direction == Direction.DOWN) {
+            yDir = 1
+        } else {
+            xDir = 1
+        }
+
+        for(i in 0..ship.size - 1) {
+            if((checkX >= gridSize || checkY >= gridSize) || (checkX < 0 || checkY < 0) ||
+                    (shipArr!![checkX][checkY] != null && shipArr!![checkX][checkY] != ship)) {
+                return true
+            }
+
+            checkX += xDir
+            checkY += yDir
+        }
+
+        return false;
+    }
+
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
         //When the screen is initially pressed, a ship is selected
         //When the user moves the ship, it moves to the best of its ability
         //to wherever the user places it
         if(event!!.action == MotionEvent.ACTION_DOWN) {
+            hasMoved = false
             selectX = xToGrid(event.x)
             selectY = yToGrid(event.y)
             selectedShip = shipArr!![selectX][selectY]
 
-            origStartX = selectedShip!!.startX
-            origStartY = selectedShip!!.startY
-
+            if(selectedShip != null) {
+                origStartX = selectedShip!!.startX
+                origStartY = selectedShip!!.startY
+            }
         } else if(event!!.action == MotionEvent.ACTION_MOVE) {
             if(selectedShip != null) {
-                //TODO Move selected ship... Oh my...
                 val newX = xToGrid(event.x)
                 val newY = yToGrid(event.y)
 
                 selectedShip!!.startX = origStartX + (newX - selectX)
                 selectedShip!!.startY = origStartY + (newY - selectY)
 
+                if(!hasMoved && (selectedShip!!.startX != origStartX || selectedShip!!.startY != origStartY)) {
+                    hasMoved = true
+                }
+
                 postInvalidate()
             }
         } else if(event!!.action == MotionEvent.ACTION_UP) {
+            if(!hasMoved && selectedShip != null) {
+                selectedShip!!.rotate()
+            }
+
+            unclipSelectedShip()
             selectedShip = null
+            hasMoved = false
             reloadShipArr()
+            postInvalidate()
         }
 
 

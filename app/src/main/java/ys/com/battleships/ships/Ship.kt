@@ -35,4 +35,11 @@ class Ship(size: Int, direction: Direction, startX: Int, startY: Int) {
     fun isDrowned() : Boolean {
         return size <= damage
     }
+
+    /**
+     * Rotates the ship.
+     */
+    fun rotate() {
+        direction = if(direction == Direction.DOWN) Direction.RIGHT else Direction.DOWN
+    }
 }
